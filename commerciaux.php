@@ -42,9 +42,54 @@ if (empty($mode))
 $mode_list = [
 	'propal'=>'Conversion Devis',
 	'product'=>'Conversion Produits',
+	'facture'=>'Factures',
 ];
 
-if ($mode=='propal') {
+if ($mode=='facture') {
+	$sqlists = [
+		'facture' => [
+			'fields' => [
+				'facture_nb'=> [
+					'label'=>'Factures Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT f.rowid)',
+					'always',
+				],
+				'facture_mt'=> [
+					'label'=>'Factures Mt',
+					'type'=>'int',
+					'unit'=>'€',
+					'sql'=>'ROUND(SUM(f.total_ht))',
+					'always',
+				],
+			],
+			'from' => ' FROM '.MAIN_DB_PREFIX.'facture f'
+				//.' LEFT JOIN '.MAIN_DB_PREFIX.'element_element j ON (f.rowid=j.fk_target AND j.targettype="commande" AND j.sourcetype="propal") OR (f.rowid=j.fk_source AND j.sourcetype="commande" AND j.targettype="propal")'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_commande.' AND ec.element_id=f.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=f.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_extrafields s2 ON s2.fk_object=s.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=f.fk_soc',
+			'join_more' => '',
+			//'where' => 'j.rowid IS NULL AND f.fk_statut > 0',
+			'where' => 'f.fk_statut > 0',
+			'filters' => [
+				'year' => 'YEAR(f.date_valid)="$param"',
+				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+			],
+			'groupby' => [
+				'w' => ['year'=>'YEAR(f.date_valid)', 'week'=>'LPAD(WEEK(f.date_valid), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(f.date_valid)', 'month'=>'LPAD(MONTH(f.date_valid), 2, "0")'],
+				'y' => ['year'=>'YEAR(f.date_valid)'],
+				'a' => [],
+			],
+		],
+	];
+
+	$sqlist = ['facture']; //'devis_commande'
+
+	$groupbymore_fields = ['categorie', 'fournisseur', 'pro'];//, 'categorie'
+}
+elseif ($mode=='propal') {
 	$sqlists = [
 		'devis' => [
 			'fields' => [
@@ -109,7 +154,7 @@ if ($mode=='propal') {
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(d.datec)', 'week'=>'LPAD(WEEK(d.datec), 2, "0")'],
-				'm' =>  ['year'=>'YEAR(d.datec)', 'month'=>'MONTH(d.datec)'],
+				'm' =>  ['year'=>'YEAR(d.datec)', 'month'=>'LPAD(MONTH(d.datec), 2, "0")'],
 				'y' => ['year'=>'YEAR(d.datec)'],
 				'a' => [],
 			],
@@ -167,7 +212,7 @@ if ($mode=='propal') {
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(c.date_creation)', 'week'=>'LPAD(WEEK(c.date_creation), 2, "0")'],
-				'm' =>  ['year'=>'YEAR(c.date_creation)', 'month'=>'MONTH(c.date_creation)'],
+				'm' =>  ['year'=>'YEAR(c.date_creation)', 'month'=>'LPAD(MONTH(c.date_creation), 2, "0")'],
 				'y' => ['year'=>'YEAR(c.date_creation)'],
 				'a' => [],
 			],
@@ -200,7 +245,7 @@ if ($mode=='propal') {
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(f.date_valid)', 'week'=>'LPAD(WEEK(f.date_valid), 2, "0")'],
-				'm' =>  ['year'=>'YEAR(f.date_valid)', 'month'=>'MONTH(f.date_valid)'],
+				'm' =>  ['year'=>'YEAR(f.date_valid)', 'month'=>'LPAD(MONTH(f.date_valid), 2, "0")'],
 				'y' => ['year'=>'YEAR(f.date_valid)'],
 				'a' => [],
 			],
@@ -291,7 +336,7 @@ elseif ($mode=='product') {
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(d.datec)', 'week'=>'LPAD(WEEK(d.datec), 2, "0")'],
-				'm' =>  ['year'=>'YEAR(d.datec)', 'month'=>'MONTH(d.datec)'],
+				'm' =>  ['year'=>'YEAR(d.datec)', 'month'=>'LPAD(MONTH(d.datec)), 2 "0")'],
 				'y' => ['year'=>'YEAR(d.datec)'],
 				'a' => [],
 			],

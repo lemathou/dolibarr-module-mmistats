@@ -42,6 +42,10 @@ $groupby_fields = [
 		'label' => 'Fournisseur',
 		'sql' => 'p2.fk_soc_fournisseur',
 	],
+	'pro' => [
+		'label' => 'Pro/Particulier',
+		'sql' => 'IF(s2.pro=1, "PRO", "")',
+	],
 ];
 
 // Filtres par défaut
@@ -144,7 +148,7 @@ foreach($groupbymore_fields as $i) {
 }
 ?></select></td>
 	<td><label for="cols[]">Affichage colonnes</label> :</td>
-	<td rowspan="3"><select name="cols[]" multiple size="6" style="overflow:auto;><?php
+	<td rowspan="3"><select name="cols[]" multiple size="6" style="overflow:auto;"><?php
 $cols = GETPOST('cols');
 if (!is_array($cols))
 	$cols = [];
