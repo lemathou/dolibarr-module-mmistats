@@ -208,6 +208,10 @@ if (! empty($conf->mmistats->enabled) && $user->rights->mmistats->read)
 
 print '</div></div></div>';
 
+print '<div>';
+print '<a href="commerciaux.php">Statistiques Commerce</a>';
+print '</div>';
+
 // End of page
 llxFooter();
 $db->close();
