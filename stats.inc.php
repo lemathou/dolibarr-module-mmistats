@@ -20,6 +20,8 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 // Load translation files required by the page
 $langs->loadLangs(array("mmistats@mmistats"));
 
+$fk_usergroup_comm = 2;
+
 $groupby_fields = [
 	'year' => [
 		'label' => 'Année',
@@ -62,9 +64,9 @@ $filters['categorie'] = [
 $filters['commercial'] = [
 	'label' => 'Commercial',
 	'list' => [],
-	'sql' => 'SELECT rowid, login, CONCAT(firstname, " ", lastname) AS name
-		FROM '.MAIN_DB_PREFIX.'user
-		ORDER BY lastname',
+	'sql' => 'SELECT DISTINCT u.rowid, login, CONCAT(u.firstname, " ", u.lastname) AS name, IF(u.statut>0 AND u.lastname<>"Commercial" AND (SELECT 1 FROM '.MAIN_DB_PREFIX.'usergroup_user ug WHERE ug.fk_user=u.rowid AND ug.fk_usergroup='.$fk_usergroup_comm.'), "ACTIF", "Inactif/Autre") AS filter_group
+		FROM '.MAIN_DB_PREFIX.'user u
+		ORDER BY filter_group, u.lastname',
 ];
 $filters['fournisseur'] = [
 	'label' => 'Fournisseur',
@@ -81,7 +83,7 @@ foreach($filters as $name=>&$filter) {
 	if (DEBUG_AFF && DEBUG_SQL)
 		var_dump($q);
 	while($r=$q->fetch_object()) {
-		$filter['list'][$r->rowid] = $r->name;
+		$filter['list'][$r->rowid] = $r;
 	}
 }
 
@@ -171,11 +173,21 @@ foreach($sqlists as $l) {
 	<td><?php
 	foreach($filters as $name=>&$filter) {
 		${$name} = GETPOST($name);
+		//var_dump($filter['list']);
 		echo '<select name="'.$name.'">';
 		echo '<option value="">-- '.$filter['label'].' --</option>';
-		foreach($filter['list'] as $i=>$j) {
-			echo '<option value="'.$i.'" '.(${$name}==$i ?' selected' :'').'>'.$j.'</option>';
+		$filter_group = NULL;
+		foreach($filter['list'] as $i=>$r) {
+			if (isset($r->filter_group) && $filter_group !== $r->filter_group) {
+				if ($filter_group !== NULL)
+					echo '</optgroup>';
+				$filter_group = $r->filter_group;
+				echo '<optgroup label="'.$r->filter_group.'">';
+			}
+			echo '<option value="'.$i.'" '.(${$name}==$i ?' selected' :'').'>'.$r->name.'</option>';
 		}
+		if ($filter_group !== NULL)
+			echo '</optgroup>';
 		echo '</select>';
 		echo '<br />';
 	}
