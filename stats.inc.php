@@ -345,7 +345,7 @@ foreach($list as $r) {
 			if (!empty($j['unit']) && $j['unit']=='€')
 				$v = number_format($r[$i], 0, '.', '&nbsp;');
 			elseif(isset($filters[$i]))
-				$v = $filters[$i]['list'][$r[$i]];
+				$v = is_object($filters[$i]['list'][$r[$i]]) ?$filters[$i]['list'][$r[$i]]->name :$filters[$i]['list'][$r[$i]];
 			else
 				$v = $r[$i];
 			echo '<td class="'.(!empty($j['type']) ?' '.$j['type'] :'').'">'.$v.(!empty($j['unit']) ?'&nbsp;'.$j['unit'] :'').'</td>';
