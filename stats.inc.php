@@ -340,8 +340,12 @@ foreach($list as $r) {
 	echo '<tr class="'.($nb%2==1 ?'odd' :'').'">';
 	foreach($select_cols as $i=>$j) {
 		if (in_array($i, $cols) || in_array($i, $groupby)) {
-			if (empty($j['unit']) || $j['unit'] != '%')
-				$total[$i] += $r[$i];
+			if (empty($j['unit']) || $j['unit'] != '%') {
+				if (!isset($total[$i]))
+					$total[$i] = $r[$i];
+				else
+					$total[$i] += $r[$i];
+			}
 			if (!empty($j['unit']) && $j['unit']=='€')
 				$v = number_format($r[$i], 0, '.', '&nbsp;');
 			elseif(isset($filters[$i]))
