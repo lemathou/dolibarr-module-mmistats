@@ -68,8 +68,8 @@ class modMMIStats extends DolibarrModules
 		$this->descriptionlong = "MMIStatsDescription";
 
 		// Author
-		$this->editor_name = 'Mathieu Moulin iProspective';
-		$this->editor_url = 'https://www.iprospective.fr/';
+		$this->editor_name = 'MMI Mathieu Moulin iProspective';
+		$this->editor_url = 'https://iprospective.fr/';
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'
 		$this->version = '1.0';
