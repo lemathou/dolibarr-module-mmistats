@@ -202,8 +202,9 @@ $sql = '(SELECT DISTINCT YEAR(datec) `year` FROM '.MAIN_DB_PREFIX.'propal)
 UNION DISTINCT
 (SELECT DISTINCT YEAR(date_creation) `year` FROM '.MAIN_DB_PREFIX.'commande WHERE fk_statut > 0)
 UNION DISTINCT
-(SELECT DISTINCT YEAR(date_valid) `year` FROM '.MAIN_DB_PREFIX.'facture WHERE fk_statut > 0)
+(SELECT DISTINCT YEAR(datef) `year` FROM '.MAIN_DB_PREFIX.'facture WHERE fk_statut > 0)
 ORDER BY `year`';
+//date_valid
 if (DEBUG_AFF && DEBUG_SQL)
 	echo '<p>'.$sql.'</p>';
 $q = $db->query($sql);
