@@ -43,6 +43,7 @@ $mode_list = [
 	'propal'=>'Conversion Devis',
 	'product'=>'Conversion Produits',
 	'facture'=>'Factures',
+	'comm'=>'Action commerciale',
 ];
 
 if ($mode=='facture') {
@@ -336,7 +337,7 @@ elseif ($mode=='product') {
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(d.datec)', 'week'=>'LPAD(WEEK(d.datec), 2, "0")'],
-				'm' =>  ['year'=>'YEAR(d.datec)', 'month'=>'LPAD(MONTH(d.datec)), 2 "0")'],
+				'm' =>  ['year'=>'YEAR(d.datec)', 'month'=>'LPAD(MONTH(d.datec), 2, "0")'],
 				'y' => ['year'=>'YEAR(d.datec)'],
 				'a' => [],
 			],
@@ -346,6 +347,163 @@ elseif ($mode=='product') {
 	$sqlist = ['devis']; //'devis_commande'
 	
 	$groupbymore_fields = ['commercial', 'categorie', 'fournisseur'];//, 'categorie'
+}
+elseif ($mode=='comm') {
+	$sqlists = [
+		'comm' => [
+			'fields' => [
+				'actioncomm_nb'=> [
+					'label'=>'Actions Comm Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT a.id)',
+					'always',
+				],
+			],
+			'from' => ' FROM '.MAIN_DB_PREFIX.'actioncomm a'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
+			'join_more' => '',
+			'filters' => [
+				'year' => 'YEAR(a.datep)="$param"',
+				'commercial' => '(a.fk_user_action=$param)',
+			],
+			'groupby' => [
+				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
+				'y' => ['year'=>'YEAR(a.datep)'],
+				'a' => [],
+			],
+		],
+		'tel' => [
+			'fields' => [
+				'tel_nb'=> [
+					'label'=>'Tél Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT a.id)',
+					'always',
+				],
+			],
+			'from' => ' FROM '.MAIN_DB_PREFIX.'actioncomm a'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
+			'join_more' => '',
+			'where' => 'a.code="AC_TEL"',
+			'filters' => [
+				'year' => 'YEAR(a.datep)="$param"',
+				'commercial' => '(a.fk_user_action=$param)',
+			],
+			'groupby' => [
+				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
+				'y' => ['year'=>'YEAR(a.datep)'],
+				'a' => [],
+			],
+		],
+		'tel_in' => [
+			'fields' => [
+				'tel_in_nb'=> [
+					'label'=>'Tél In Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT a.id)',
+					'always',
+				],
+			],
+			'from' => ' FROM '.MAIN_DB_PREFIX.'actioncomm a'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
+			'join_more' => '',
+			'where' => 'a.code="AC_TEL" AND a.label LIKE "Appel téléphonique entrant"',
+			'filters' => [
+				'year' => 'YEAR(a.datep)="$param"',
+				'commercial' => '(a.fk_user_action=$param)',
+			],
+			'groupby' => [
+				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
+				'y' => ['year'=>'YEAR(a.datep)'],
+				'a' => [],
+			],
+		],
+		'tel_out' => [
+			'fields' => [
+				'tel_out_nb'=> [
+					'label'=>'Tél Out Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT a.id)',
+					'always',
+				],
+			],
+			'from' => ' FROM '.MAIN_DB_PREFIX.'actioncomm a'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
+			'join_more' => '',
+			'where' => 'a.code="AC_TEL" AND a.label LIKE "Appel téléphonique sortant"',
+			'filters' => [
+				'year' => 'YEAR(a.datep)="$param"',
+				'commercial' => '(a.fk_user_action=$param)',
+			],
+			'groupby' => [
+				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
+				'y' => ['year'=>'YEAR(a.datep)'],
+				'a' => [],
+			],
+		],
+		'propal_sentmail' => [
+			'fields' => [
+				'propal_sentmail_nb'=> [
+					'label'=>'Propal Email Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT a.id)',
+					'always',
+				],
+			],
+			'from' => ' FROM '.MAIN_DB_PREFIX.'actioncomm a'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
+			'join_more' => '',
+			'where' => 'a.code="AC_PROPAL_SENTBYMAIL"',
+			'filters' => [
+				'year' => 'YEAR(a.datep)="$param"',
+				'commercial' => '(a.fk_user_action=$param)',
+			],
+			'groupby' => [
+				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
+				'y' => ['year'=>'YEAR(a.datep)'],
+				'a' => [],
+			],
+		],
+		'sms' => [
+			'fields' => [
+				'sms_nb'=> [
+					'label'=>'SMS Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT a.id)',
+					'always',
+				],
+			],
+			'from' => ' FROM '.MAIN_DB_PREFIX.'actioncomm a'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
+			'join_more' => '',
+			'where' => 'a.code="AC_SENTBYSMS"',
+			'filters' => [
+				'year' => 'YEAR(a.datep)="$param"',
+				'commercial' => '(a.fk_user_action=$param)',
+			],
+			'groupby' => [
+				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
+				'y' => ['year'=>'YEAR(a.datep)'],
+				'a' => [],
+			],
+		],
+	];
+		
+	$sqlist = ['comm', 'tel', 'tel_in', 'tel_out', 'propal_sentmail', 'sms']; //'devis_commande'
+	
+	$groupbymore_fields = ['commercial'];//, 'categorie'
 }
 
 // définir des $groupby_fields perso
