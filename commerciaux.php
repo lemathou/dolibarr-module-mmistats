@@ -487,7 +487,7 @@ elseif ($mode=='comm') {
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
 			'join_more' => '',
-			'where' => 'a.code="AC_SENTBYSMS"',
+			'where' => 'a.code="AC_COMPANY_SENTBYSMS"',
 			'filters' => [
 				'year' => 'YEAR(a.datep)="$param"',
 				'commercial' => '(a.fk_user_action=$param)',
