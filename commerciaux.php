@@ -350,52 +350,99 @@ elseif ($mode=='product') {
 }
 elseif ($mode=='comm') {
 	$sqlists = [
-		'comm' => [
+		'devis' => [
 			'fields' => [
-				'actioncomm_nb'=> [
-					'label'=>'Actions Comm Nb',
+				'devis_nb'=> [
+					'label'=>'Devis Nb',
 					'type'=>'int',
-					'sql'=>'COUNT(DISTINCT a.id)',
+					'sql'=>'COUNT(DISTINCT d.rowid)',
 					'always',
 				],
+				'devis_mt'=> [
+					'label'=>'Devis Mt',
+					'type'=>'int',
+					'sql'=>'ROUND(SUM(d.total_ht))',
+					'always',
+				],
+				'devis_gagne_nb'=> [
+					'label'=>'Devis gagnés Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT IF(d.fk_statut IN (2, 4), d.rowid, NULL))',
+					'default',
+				],
+				'devis_gagne_mt'=> [
+					'label'=>'Devis gagnés Mt',
+					'type'=>'int',
+					'sql'=>'ROUND(SUM(IF(d.fk_statut IN (2, 4), d.total_ht, 0)))',
+					'default',
+				],
+				'devis_gagne_nb_p'=> [
+					'label'=>'Devis gagnés Nb%',
+					'type'=>'float',
+					'unit' => '%',
+					'sql'=>'ROUND(100*COUNT(DISTINCT IF(d.fk_statut IN (2, 4), d.rowid, NULL))/COUNT(DISTINCT d.rowid), 2)',
+					'default',
+				],
+				'devis_gagne_mt_p'=> [
+					'label'=>'Devis gagnés Mt%',
+					'type'=>'float',
+					'unit' => '%',
+					'sql'=>'ROUND(100*SUM(IF(d.fk_statut IN (2, 4), d.total_ht, 0))/SUM(d.total_ht), 2)',
+					'default',
+				],
+				'devis_perdu_nb'=> [
+					'label'=>'Devis perdus Nb',
+					'type'=>'int',
+					'sql'=>'SUM(IF(d.fk_statut=3, 1, 0))',
+				],
 			],
-			'from' => ' FROM '.MAIN_DB_PREFIX.'actioncomm a'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
+			'from' => ' FROM '.MAIN_DB_PREFIX.'propal d'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'propaldet dd ON dd.fk_propal=d.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=d.fk_soc',
 			'join_more' => '',
 			'filters' => [
-				'year' => 'YEAR(a.datep)="$param"',
-				'commercial' => '(a.fk_user_action=$param)',
+				'year' => 'YEAR(d.datec)="$param"',
+				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+				'categorie' => '(kp.fk_categorie=$param)',
+				'fournisseur' => '(p2.fk_soc_fournisseur=$param)',
 			],
 			'groupby' => [
-				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
-				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
-				'y' => ['year'=>'YEAR(a.datep)'],
+				'w' => ['year'=>'YEAR(d.datec)', 'week'=>'LPAD(WEEK(d.datec), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(d.datec)', 'month'=>'LPAD(MONTH(d.datec), 2, "0")'],
+				'y' => ['year'=>'YEAR(d.datec)'],
 				'a' => [],
 			],
 		],
-		'tel' => [
+		'devis_win' => [
 			'fields' => [
-				'tel_nb'=> [
-					'label'=>'Tél Nb',
+				'devis_win_nb'=> [
+					'label'=>'Devis Win Nb',
 					'type'=>'int',
-					'sql'=>'COUNT(DISTINCT a.id)',
+					'sql'=>'COUNT(d.rowid)',
+					'always',
+				],
+				'devis_win_mt'=> [
+					'label'=>'Devis Win Mt',
+					'type'=>'int',
+					'sql'=>'ROUND(SUM(d.total_ht))',
 					'always',
 				],
 			],
-			'from' => ' FROM '.MAIN_DB_PREFIX.'actioncomm a'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=a.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=a.fk_soc',
+			'from' => ' FROM '.MAIN_DB_PREFIX.'propal d'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_devis.' AND ec.element_id=d.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=d.fk_soc',
 			'join_more' => '',
-			'where' => 'a.code="AC_TEL"',
+			'where' => 'd.fk_statut IN (2,4)',
 			'filters' => [
-				'year' => 'YEAR(a.datep)="$param"',
-				'commercial' => '(a.fk_user_action=$param)',
+				'year' => 'YEAR(d.date_signature)="$param"',
+				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
 			],
 			'groupby' => [
-				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
-				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
-				'y' => ['year'=>'YEAR(a.datep)'],
+				'w' => ['year'=>'YEAR(d.date_signature)', 'week'=>'LPAD(WEEK(d.date_signature), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(d.date_signature)', 'month'=>'LPAD(MONTH(d.date_signature), 2, "0")'],
+				'y' => ['year'=>'YEAR(d.date_signature)'],
 				'a' => [],
 			],
 		],
@@ -501,7 +548,7 @@ elseif ($mode=='comm') {
 		],
 	];
 		
-	$sqlist = ['comm', 'tel', 'tel_in', 'tel_out', 'propal_sentmail', 'sms']; //'devis_commande'
+	$sqlist = ['devis', 'devis_win', 'tel_in', 'tel_out', 'propal_sentmail', 'sms']; //'devis_commande'
 	
 	$groupbymore_fields = ['commercial'];//, 'categorie'
 }
