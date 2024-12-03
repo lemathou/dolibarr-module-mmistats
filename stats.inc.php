@@ -22,6 +22,7 @@ $langs->loadLangs(array("mmistats@mmistats"));
 
 $fk_usergroup_comm = 2;
 
+// Can Overload SQL in specific
 $groupby_fields = [
 	'year' => [
 		'label' => 'Année',
@@ -34,7 +35,7 @@ $groupby_fields = [
 	],
 	'commercial' => [
 		'label' => 'Commercial',
-		'sql' => 'su.fk_user',
+		'sql' => 'ec.fk_socpeople', // su... c'est la merde il en faut plusieurs
 	],
 	'categorie' => [
 		'label' => 'Catégorie Produit',
@@ -140,13 +141,31 @@ if (empty($period))
 foreach(['w'=>'Semaine', 'm'=>'Mois', 'y'=>'Année', 'a'=>'Tout'] as $i=>$j) {
 	echo '<option value="'.$i.'" '.($period==$i ?' selected' :'').'>'.$j.'</option>';
 }
+if ($period=='w') {
+	$groupby = ['year', 'week'];
+}
+elseif ($period=='m') {
+	$groupby = ['year', 'month'];
+}
+elseif ($period=='y') {
+	$groupby = ['year'];
+}
+else {
+	$groupby = [];
+}
 ?></select>
 	<br />
 	<select name="groupbymore"><option value="">--</option><?php
 $groupbymore = GETPOST('groupbymore');
 foreach($groupbymore_fields as $i) {
-	$j = $groupby_fields[$i];
-	echo '<option value="'.$i.'" '.($groupbymore==$i ?' selected' :'').'>'.$j['label'].'</option>';
+	$groupby_field = $groupby_fields[$i];
+	echo '<option value="'.$i.'" '.($groupbymore==$i ?' selected' :'').'>'.$groupby_fields[$i]['label'].'</option>';
+}
+//$groupbymore = '';
+//$groupbymore = 'commercial';
+if ($groupbymore) {
+	$groupby_field = $groupby_fields[$groupbymore];
+	$groupby[] = $groupbymore;
 }
 ?></select></td>
 	<td><label for="cols[]">Affichage colonnes</label> :</td>
@@ -219,26 +238,6 @@ while($r=$q->fetch_object()) {
 <br />
 <?php
 
-if ($period=='w') {
-	$groupby = ['year', 'week'];
-}
-elseif ($period=='m') {
-	$groupby = ['year', 'month'];
-}
-elseif ($period=='y') {
-	$groupby = ['year'];
-}
-else {
-	$groupby = [];
-}
-
-//$groupbymore = '';
-//$groupbymore = 'commercial';
-if ($groupbymore) {
-	$groupby_field = $groupby_fields[$groupbymore];
-	$groupby[] = $groupbymore;
-}
-
 $list = [];
 
 // Devis
@@ -251,17 +250,17 @@ foreach ($sqlist as $l) {
 		$sql_select[$i] = $j['sql'].' as `'.$i.'`';
 	$sql_groupby = [];
 	$sql_orderby = [];
-	foreach($params['groupby'][$period] as $i=>$j) {
-		$sql_select[$i] = $j.' as '.$i;
-		$sql_groupby[$i] = $j;
-		$sql_orderby[$i] = $j;
+	foreach($params['groupby'][$period] as $i=>$sql_fieldname) {
+		$sql_select[$i] = $sql_fieldname.' as '.$i;
+		$sql_groupby[$i] = $sql_fieldname;
+		$sql_orderby[$i] = $sql_fieldname;
 	}
 	if ($groupbymore) {
 		$i = $groupbymore;
-		$j = $groupby_field['sql'];
-		$sql_select[$i] = $j.' as '.$i;
-		$sql_groupby[$i] = $j;
-		$sql_orderby[$i] = $j;
+		$sql_fieldname = isset($params['groupbymore'][$i]) ?$params['groupbymore'][$i] :$groupby_field['sql'];
+		$sql_select[$i] = $sql_fieldname.' as '.$i;
+		$sql_groupby[$i] = $sql_fieldname;
+		$sql_orderby[$i] = $sql_fieldname;
 	}
 	if (DEBUG_AFF && DEBUG_SQL)
 		var_dump($sql_select);

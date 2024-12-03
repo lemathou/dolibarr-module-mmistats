@@ -32,9 +32,19 @@ define('DEBUG_SQL', true);
 
 // Taux de transformation nombre de devis/nombre de ventes par commercial et pour l'ensemble de l'équipe.
 
-// @todo sql query
-$c_type_contact_devis = 31;
-$c_type_contact_commande = 91;
+// Types contact internes associés
+$c_type_contact = [];
+$sql = 'SELECT rowid, code, element'
+	.' FROM '.MAIN_DB_PREFIX.'c_type_contact'
+	.' WHERE source="internal" AND code="SALESREPFOLL" AND element IN ("propal", "commande", "facture")';
+$q = $db->query($sql);
+if (DEBUG_AFF && DEBUG_SQL)
+	var_dump($q);
+if ($q) {
+	while($r=$db->fetch_array($q)) {
+		$c_type_contact[$r['element']] = $r['rowid'];
+	}
+}
 
 $mode = GETPOST('mode');
 if (empty($mode))
@@ -65,17 +75,15 @@ if ($mode=='facture') {
 				],
 			],
 			'from' => ' FROM '.MAIN_DB_PREFIX.'facture f'
-				//.' LEFT JOIN '.MAIN_DB_PREFIX.'element_element j ON (f.rowid=j.fk_target AND j.targettype="commande" AND j.sourcetype="propal") OR (f.rowid=j.fk_source AND j.sourcetype="commande" AND j.targettype="propal")'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_commande.' AND ec.element_id=f.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['facture'].' AND ec.element_id=f.rowid'
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=f.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_extrafields s2 ON s2.fk_object=s.rowid'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=f.fk_soc',
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_extrafields s2 ON s2.fk_object=s.rowid',
 			'join_more' => '',
 			//'where' => 'j.rowid IS NULL AND f.fk_statut > 0',
 			'where' => 'f.fk_statut > 0',
 			'filters' => [
 				'year' => 'YEAR(f.datef)="$param"',
-				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+				'commercial' => '(ec.fk_socpeople=$param)',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(f.datef)', 'week'=>'LPAD(WEEK(f.datef), 2, "0")'],
@@ -145,13 +153,12 @@ elseif ($mode=='propal') {
 				],*/
 			],
 			'from' => ' FROM '.MAIN_DB_PREFIX.'propal d'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_devis.' AND ec.element_id=d.rowid'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=d.fk_soc',
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['propal'].' AND ec.element_id=d.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc',
 			'join_more' => '',
 			'filters' => [
 				'year' => 'YEAR(d.datec)="$param"',
-				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+				'commercial' => '(ec.fk_socpeople=$param)',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(d.datec)', 'week'=>'LPAD(WEEK(d.datec), 2, "0")'],
@@ -171,13 +178,12 @@ elseif ($mode=='propal') {
 			'from' => ' FROM '.MAIN_DB_PREFIX.'propal d'
 				.' INNER JOIN '.MAIN_DB_PREFIX.'element_element j ON (j.fk_source=d.rowid AND j.sourcetype="propal" AND j.targettype="commande") OR (j.fk_target=d.rowid AND j.targettype="propal" AND j.sourcetype="commande")'
 				.' INNER JOIN '.MAIN_DB_PREFIX.'commande c ON (c.rowid=j.fk_target AND j.targettype="commande") OR (c.rowid=j.fk_source AND j.sourcetype="commande")'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_devis.' AND ec.element_id=d.rowid'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=d.fk_soc',
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['propal'].' AND ec.element_id=d.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc',
 			'join_more' => '',
 			'filters' => [
 				'year' => 'YEAR(d.datec)="$param"',
-				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+				'commercial' => '(ec.fk_socpeople=$param)',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(d.datec)', 'week'=>'LPAD(WEEK(d.datec), 2, "0")'],
@@ -202,14 +208,13 @@ elseif ($mode=='propal') {
 			],
 			'from' => ' FROM '.MAIN_DB_PREFIX.'commande c'
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_element j ON (c.rowid=j.fk_target AND j.targettype="commande" AND j.sourcetype="propal") OR (c.rowid=j.fk_source AND j.sourcetype="commande" AND j.targettype="propal")'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_commande.' AND ec.element_id=c.rowid'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=c.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=c.fk_soc',
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['commande'].' AND ec.element_id=c.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=c.fk_soc',
 			'join_more' => '',
 			'where' => 'j.rowid IS NULL AND c.fk_statut > 0',
 			'filters' => [
 				'year' => 'YEAR(c.date_creation)="$param"',
-				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+				'commercial' => '(ec.fk_socpeople=$param)',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(c.date_creation)', 'week'=>'LPAD(WEEK(c.date_creation), 2, "0")'],
@@ -233,16 +238,14 @@ elseif ($mode=='propal') {
 				],
 			],
 			'from' => ' FROM '.MAIN_DB_PREFIX.'facture f'
-				//.' LEFT JOIN '.MAIN_DB_PREFIX.'element_element j ON (f.rowid=j.fk_target AND j.targettype="commande" AND j.sourcetype="propal") OR (f.rowid=j.fk_source AND j.sourcetype="commande" AND j.targettype="propal")'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_commande.' AND ec.element_id=f.rowid'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=f.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=f.fk_soc',
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['facture'].' AND ec.element_id=f.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=f.fk_soc',
 			'join_more' => '',
 			//'where' => 'j.rowid IS NULL AND f.fk_statut > 0',
 			'where' => 'f.fk_statut > 0',
 			'filters' => [
 				'year' => 'YEAR(f.date_valid)="$param"',
-				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+				'commercial' => '(ec.fk_socpeople=$param)',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(f.datef)', 'week'=>'LPAD(WEEK(f.datef), 2, "0")'],
@@ -325,13 +328,12 @@ elseif ($mode=='product') {
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'product p ON p.rowid=dd.fk_product'
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields p2 ON p2.fk_object=dd.fk_product'
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_product kp ON kp.fk_product=dd.fk_product'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_devis.' AND ec.element_id=d.rowid'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=d.fk_soc',
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['propal'].' AND ec.element_id=d.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc',
 			'join_more' => '',
 			'filters' => [
 				'year' => 'YEAR(d.datec)="$param"',
-				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+				'commercial' => '(ec.fk_socpeople=$param)',
 				'categorie' => '(kp.fk_categorie=$param)',
 				'fournisseur' => '(p2.fk_soc_fournisseur=$param)',
 			],
@@ -397,15 +399,15 @@ elseif ($mode=='comm') {
 				],
 			],
 			'from' => ' FROM '.MAIN_DB_PREFIX.'propal d'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'propaldet dd ON dd.fk_propal=d.rowid'
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=d.fk_soc',
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['propal'].' AND ec.element_id=d.rowid',
 			'join_more' => '',
 			'filters' => [
 				'year' => 'YEAR(d.datec)="$param"',
-				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
-				'categorie' => '(kp.fk_categorie=$param)',
-				'fournisseur' => '(p2.fk_soc_fournisseur=$param)',
+				'commercial' => '(ec.fk_socpeople=$param)',
+			],
+			'groupbymore' => [
+				'commercial' => 'ec.fk_socpeople',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(d.datec)', 'week'=>'LPAD(WEEK(d.datec), 2, "0")'],
@@ -430,14 +432,16 @@ elseif ($mode=='comm') {
 				],
 			],
 			'from' => ' FROM '.MAIN_DB_PREFIX.'propal d'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact_devis.' AND ec.element_id=d.rowid'
 				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=d.fk_soc'
-				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux su ON su.fk_soc=d.fk_soc',
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['propal'].' AND ec.element_id=d.rowid',
 			'join_more' => '',
 			'where' => 'd.fk_statut IN (2,4)',
 			'filters' => [
 				'year' => 'YEAR(d.date_signature)="$param"',
-				'commercial' => '(ec.fk_socpeople=$param OR su.fk_user=$param)',
+				'commercial' => '(ec.fk_socpeople=$param)',
+			],
+			'groupbymore' => [
+				'commercial' => 'ec.fk_socpeople',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(d.date_signature)', 'week'=>'LPAD(WEEK(d.date_signature), 2, "0")'],
@@ -464,6 +468,9 @@ elseif ($mode=='comm') {
 				'year' => 'YEAR(a.datep)="$param"',
 				'commercial' => '(a.fk_user_action=$param)',
 			],
+			'groupbymore' => [
+				'commercial' => 'a.fk_user_action',
+			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
 				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
@@ -488,6 +495,9 @@ elseif ($mode=='comm') {
 			'filters' => [
 				'year' => 'YEAR(a.datep)="$param"',
 				'commercial' => '(a.fk_user_action=$param)',
+			],
+			'groupbymore' => [
+				'commercial' => 'a.fk_user_action',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
@@ -514,6 +524,9 @@ elseif ($mode=='comm') {
 				'year' => 'YEAR(a.datep)="$param"',
 				'commercial' => '(a.fk_user_action=$param)',
 			],
+			'groupbymore' => [
+				'commercial' => 'a.fk_user_action',
+			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
 				'm' =>  ['year'=>'YEAR(a.datep)', 'month'=>'LPAD(MONTH(a.datep), 2, "0")'],
@@ -538,6 +551,9 @@ elseif ($mode=='comm') {
 			'filters' => [
 				'year' => 'YEAR(a.datep)="$param"',
 				'commercial' => '(a.fk_user_action=$param)',
+			],
+			'groupbymore' => [
+				'commercial' => 'a.fk_user_action',
 			],
 			'groupby' => [
 				'w' => ['year'=>'YEAR(a.datep)', 'week'=>'LPAD(WEEK(a.datep), 2, "0")'],
