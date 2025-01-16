@@ -344,6 +344,49 @@ elseif ($mode=='product') {
 				'a' => [],
 			],
 		],
+		'facture' => [
+			'fields' => [
+				'facture_nb'=> [
+					'label'=>'Facture Nb',
+					'type'=>'int',
+					'sql'=>'COUNT(DISTINCT f.rowid)',
+					'always',
+				],
+				'facture_product_mt'=> [
+					'label'=>'Facture Produits Mt',
+					'type'=>'int',
+					'unit'=>'€',
+					'sql'=>'ROUND(SUM(fd.total_ht))',
+					'default',
+				],
+				'facture_product_gagne_mt'=> [
+					'label'=>'Facture Produits gagnés Mt',
+					'type'=>'int',
+					'unit'=>'€',
+					'sql'=>'ROUND(SUM(IF(d.fk_statut IN (2, 4), dd.total_ht, 0)))',
+				],
+			],
+			'from' => ' FROM '.MAIN_DB_PREFIX.'facture f'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'facturedet fd ON fd.fk_facture=f.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'product p ON p.rowid=fd.fk_product'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields p2 ON p2.fk_object=fd.fk_product'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_product kp ON kp.fk_product=fd.fk_product'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON ec.fk_c_type_contact='.$c_type_contact['facture'].' AND ec.element_id=f.rowid'
+				.' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid=f.fk_soc',
+			'join_more' => '',
+			'filters' => [
+				'year' => 'YEAR(d.datec)="$param"',
+				'commercial' => '(ec.fk_socpeople=$param)',
+				'categorie' => '(kp.fk_categorie=$param)',
+				'fournisseur' => '(p2.fk_soc_fournisseur=$param)',
+			],
+			'groupby' => [
+				'w' => ['year'=>'YEAR(d.datec)', 'week'=>'LPAD(WEEK(d.datec), 2, "0")'],
+				'm' =>  ['year'=>'YEAR(d.datec)', 'month'=>'LPAD(MONTH(d.datec), 2, "0")'],
+				'y' => ['year'=>'YEAR(d.datec)'],
+				'a' => [],
+			],
+		],
 	];
 		
 	$sqlist = ['devis']; //'devis_commande'
