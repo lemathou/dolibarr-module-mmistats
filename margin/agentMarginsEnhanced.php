@@ -237,24 +237,24 @@ if ($result) {
 			}
 
 			$seller_nb = 1;
-			if ($objp->socid > 0) {
-				// sql nb sellers
-				$sql_seller  = "SELECT COUNT(sc.rowid) as nb";
-				$sql_seller .= " FROM ".MAIN_DB_PREFIX."societe_commerciaux as sc";
-				$sql_seller .= " WHERE sc.fk_soc = ".((int) $objp->socid);
-				$sql_seller .= " LIMIT 1";
-
-				$resql_seller = $db->query($sql_seller);
-				if (!$resql_seller) {
-					dol_print_error($db);
-				} else {
-					if ($obj_seller = $db->fetch_object($resql_seller)) {
-						if ($obj_seller->nb > 0) {
-							$seller_nb = $obj_seller->nb;
-						}
-					}
-				}
-			}
+//			if ($objp->socid > 0) {
+//				// sql nb sellers
+//				$sql_seller  = "SELECT COUNT(sc.rowid) as nb";
+//				$sql_seller .= " FROM ".MAIN_DB_PREFIX."societe_commerciaux as sc";
+//				$sql_seller .= " WHERE sc.fk_soc = ".((int) $objp->socid);
+//				$sql_seller .= " LIMIT 1";
+//
+//				$resql_seller = $db->query($sql_seller);
+//				if (!$resql_seller) {
+//					dol_print_error($db);
+//				} else {
+//					if ($obj_seller = $db->fetch_object($resql_seller)) {
+//						if ($obj_seller->nb > 0) {
+//							$seller_nb = $obj_seller->nb;
+//						}
+//					}
+//				}
+//			}
 
 			$group_list[$group_id]['selling_price'] += $objp->selling_price / $seller_nb;
 			$group_list[$group_id]['buying_price'] += $objp->buying_price / $seller_nb;
@@ -471,24 +471,24 @@ if ($result) {
 			}
 
 			$seller_nb = 1;
-			if ($objp->socid > 0) {
-				// sql nb sellers
-				$sql_seller  = "SELECT COUNT(sc.rowid) as nb";
-				$sql_seller .= " FROM ".MAIN_DB_PREFIX."societe_commerciaux as sc";
-				$sql_seller .= " WHERE sc.fk_soc = ".((int) $objp->socid);
-				$sql_seller .= " LIMIT 1";
-
-				$resql_seller = $db->query($sql_seller);
-				if (!$resql_seller) {
-					dol_print_error($db);
-				} else {
-					if ($obj_seller = $db->fetch_object($resql_seller)) {
-						if ($obj_seller->nb > 0) {
-							$seller_nb = $obj_seller->nb;
-						}
-					}
-				}
-			}
+//			if ($objp->socid > 0) {
+//				// sql nb sellers
+//				$sql_seller  = "SELECT COUNT(sc.rowid) as nb";
+//				$sql_seller .= " FROM ".MAIN_DB_PREFIX."societe_commerciaux as sc";
+//				$sql_seller .= " WHERE sc.fk_soc = ".((int) $objp->socid);
+//				$sql_seller .= " LIMIT 1";
+//
+//				$resql_seller = $db->query($sql_seller);
+//				if (!$resql_seller) {
+//					dol_print_error($db);
+//				} else {
+//					if ($obj_seller = $db->fetch_object($resql_seller)) {
+//						if ($obj_seller->nb > 0) {
+//							$seller_nb = $obj_seller->nb;
+//						}
+//					}
+//				}
+//			}
 
 			$group_list[$group_id]['selling_price'] += $objp->selling_price / $seller_nb;
 			$group_list[$group_id]['buying_price'] += $objp->buying_price / $seller_nb;
