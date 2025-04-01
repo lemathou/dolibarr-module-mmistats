@@ -57,6 +57,25 @@ MyPageName = My page name
 ModuleMMIStatsCommerciaux = Commerciaux
 MMIStatsCommerciauxArea = Statistiques Commerciaux
 
+MargePropalAndInvoice=Marges par utilisateur avec Devis
+FactureSellingPrice=Fact. - Prix de vente
+FactureNb=Fact. - Nb
+FactureMargin= Fact. - Marge
+FactureBuyingPrice=Fact. - Prix d'achat
+FactureCostPrice=Fact. - Prix de revient
+FactureMarginRate=Fact. - Taux de marge
+FactureMarkRate=Fact. - Taux de marque
+
+PropalSellingPrice=Devis - Prix de vente
+PropalNb=Devis - Nb
+PropalMargin=Devis - Marge
+PropalBuyingPrice=Devis - Prix d'achat
+PropalCostPrice=Devis - Prix de revient
+PropalMarginRate=Devis - Taux de marge
+PropalMarkRate=Devis - Taux de marque
+
+
+
 #
 # Commerciaux
 #
