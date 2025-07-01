@@ -31,7 +31,6 @@ MMIStatsArea = Statistiques
 # Admin page
 #
 MMIStatsSetup = MMIStats setup
-Settings = Settings
 MMIStatsSetupPage = MMIStats setup page
 MMISTATS_MYPARAM1 = My param 1
 MMISTATS_MYPARAM1Tooltip = My param 1 tooltip
@@ -42,7 +41,6 @@ MMISTATS_MYPARAM2Tooltip=My param 2 tooltip
 #
 # About page
 #
-About = About
 MMIStatsAbout = About MMIStats
 MMIStatsAboutPage = MMIStats about page
 
