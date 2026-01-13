@@ -305,6 +305,7 @@ $totalMargin = 0;
 $marginRate = '';
 $markRate = '';
 $invoice_status_except_list = array(Facture::STATUS_DRAFT, Facture::STATUS_ABANDONED);
+$contact_type = getDolGlobalInt('AGENT_CONTACT_TYPE');
 
 $sql = "SELECT";
 $sql .= " s.rowid as socid, s.nom as name, s.code_client, s.client,";
@@ -319,16 +320,20 @@ $sql .= " ,count(DISTINCT f.rowid) as nb";
 
 $sql .= " FROM ".MAIN_DB_PREFIX."societe as s";
 $sql .= ", ".MAIN_DB_PREFIX."facture as f";
-$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_contact e ON e.element_id = f.rowid and e.statut = 4 and e.fk_c_type_contact = ".(!getDolGlobalString('AGENT_CONTACT_TYPE') ? -1 : $conf->global->AGENT_CONTACT_TYPE);
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_contact e ON e.element_id = f.rowid and e.statut = 4 and e.fk_c_type_contact = ".(empty($contact_type) ? -1 : $contact_type);
 $sql .= ", ".MAIN_DB_PREFIX."facturedet as d";
-$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
+if (empty($contact_type)) {
+	$sql .= ", " . MAIN_DB_PREFIX . "societe_commerciaux as sc";
+}
 $sql .= ", ".MAIN_DB_PREFIX."user as u";
 $sql .= " WHERE f.fk_soc = s.rowid";
 $sql .= ' AND f.entity IN ('.getEntity('invoice').')';
-$sql .= " AND sc.fk_soc = f.fk_soc";
+if (empty($contact_type)) {
+	$sql .= " AND sc.fk_soc = f.fk_soc";
+}
 $sql .= " AND (d.product_type = 0 OR d.product_type = 1)";
-if (getDolGlobalString('AGENT_CONTACT_TYPE')) {
-	$sql .= " AND ((e.fk_socpeople IS NULL AND sc.fk_user = u.rowid) OR (e.fk_socpeople IS NOT NULL AND e.fk_socpeople = u.rowid))";
+if ($contact_type>0) {
+	$sql .= " AND (e.fk_socpeople = u.rowid)";
 } else {
 	$sql .= " AND sc.fk_user = u.rowid";
 }
