@@ -341,8 +341,8 @@ $sql .= " AND f.fk_statut NOT IN (".$db->sanitize(implode(', ', $invoice_status_
 $sql .= ' AND s.entity IN ('.getEntity('societe').')';
 $sql .= " AND d.fk_facture = f.rowid";
 if ($agentid > 0) {
-	if (getDolGlobalString('AGENT_CONTACT_TYPE')) {
-		$sql .= " AND ((e.fk_socpeople IS NULL AND sc.fk_user = ".((int) $agentid).") OR (e.fk_socpeople IS NOT NULL AND e.fk_socpeople = ".((int) $agentid)."))";
+	if ($contact_type) {
+		$sql .= " AND (e.fk_socpeople = ".((int) $agentid).")";
 	} else {
 		$sql .= " AND sc.fk_user = ".((int) $agentid);
 	}
